@@ -123,13 +123,21 @@
                 });
             };
 
+            function tryRecaptcha(deferred, intervalID) {
+                if (recaptcha && recaptcha.render) {
+                    $interval.cancel(intervalID);
+                    deferred.resolve(recaptcha);
+                }
+            }
 
             function getRecaptcha() {
-                if (!!recaptcha) {
-                    return $q.when(recaptcha);
-                }
+                var deferred = $q.defer();
+                tryRecaptcha(deferred);
+                var intervalID = $interval(function () {
+                    tryRecaptcha(deferred, intervalID);
+                }, 200);
 
-                return promise;
+                return deferred.promise;
             }
 
             function validateRecaptchaInstance() {
